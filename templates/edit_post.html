@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Post{% endblock %}
+
+{% block main %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-lg my-5">
+            <div class="card-header bg-info text-white">
+                <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Post #{{ post.id }}</h3>
+                <p class="mb-0">Produto: <strong>{{ post.product_name }}</strong> | Status Atual: <span class="status-badge status-{{ post.status }}">{{ post.status | upper }}</span></p>
+            </div>
+            <div class="card-body p-4">
+                <!-- Formulário de Edição (Update) -->
+                <form action="{{ url_for('update_post') }}" method="POST" class="needs-validation" novalidate>
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="user_id" value="{{ post.user_id }}">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Preço Anunciado (Obrigatório) - €:</label>
+                            <input type="number" step="0.01" name="first_price" class="form-control" required value="{{ post.first_price | default('') }}" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preço Vendido (Opcional) - €:</label>
+                            <input type="number" step="0.01" name="sell_price" class="form-control" value="{{ post.sell_price | default('') }}" min="0">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Custo de Destaques - €:</label>
+                            <input type="number" step="0.01" name="ad_tax" class="form-control" value="{{ post.ad_tax | default(0) }}" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data do Post:</label>
+                            <input type="date" name="post_date" class="form-control" required value="{{ post.post_date }}">
+                        </div>
+                    </div>
+
+                    <!-- NOVOS CAMPOS: Métricas de Engajamento -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Views:</label>
+                            <input type="number" name="views" class="form-control" value="{{ post.views | default(0) }}" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Likes:</label>
+                            <input type="number" name="likes" class="form-control" value="{{ post.likes | default(0) }}" min="0">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Propostas:</label>
+                            <input type="number" name="proposals" class="form-control" value="{{ post.proposals | default(0) }}" min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Data da Venda (Se Preenchida, Status vai para SOLD e Preço Vendido é obrigatório):</label>
+                        <input type="date" name="sell_date" class="form-control" value="{{ post.sell_date if post.sell_date else '' }}">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('index', user_id=post.user_id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+
+                <!-- Formulário de Exclusão (Delete) -->
+                <form id="deletePostForm" action="{{ url_for('delete_post') }}" method="POST">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="user_id" value="{{ post.user_id }}">
+                    <button type="button" 
+                            class="btn btn-danger w-100" 
+                            onclick="confirmDeletion('Post')">
+                        <i class="fas fa-trash-alt me-1"></i> Deletar Post
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para confirmar a exclusão (substitui alert/confirm)
+    function confirmDeletion(itemType) {
+        if (itemType === 'Post') {
+            if (window.prompt("ATENÇÃO: Você está prestes a DELETAR este Post.\n\nSe este Post já foi VENDIDO, o produto associado voltará para STOCK.\n\nDigite 'DELETAR' para confirmar:") === 'DELETAR') {
+                document.getElementById('deletePostForm').submit();
+            } else {
+                // Mensagem de erro ou cancelamento
+                console.log("Exclusão do Post cancelada.");
+            }
+        }
+    }
+</script>
+
+{% endblock %}

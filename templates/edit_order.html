@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block title %}Editar Encomenda{% endblock %}
+
+{% block main %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-lg my-5">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Editar Encomenda #{{ order.id }}</h3>
+                <p class="mb-0">Status Atual: <span class="status-badge status-{{ order.status }}">{{ order.status | upper }}</span></p>
+            </div>
+            <div class="card-body p-4">
+                <!-- Formulário de Edição (Update) -->
+                <form action="{{ url_for('update_order') }}" method="POST" class="needs-validation" novalidate>
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="user_id" value="{{ order.user_id }}">
+                    
+                    <!-- Campo de Produto -->
+                    <div class="mb-3">
+                        <label class="form-label">Produto:</label>
+                        <select name="product_id" class="form-select" required>
+                            {% for p in products %}
+                            <option value="{{ p.id }}" {% if p.id == order.product_id %}selected{% endif %}>
+                                {{ p.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Campos de Marca, Tamanho e Cor -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Marca:</label>
+                            <select name="brand_id" class="form-select" required>
+                                {% for b in brands %}
+                                <option value="{{ b.id }}" {% if b.id == order.brand_id %}selected{% endif %}>
+                                    {{ b.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tamanho:</label>
+                            <select name="size_id" class="form-select" required>
+                                {% for s in sizes %}
+                                <option value="{{ s.id }}" {% if s.id == order.size_id %}selected{% endif %}>
+                                    {{ s.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cor:</label>
+                            <select name="color_id" class="form-select" required>
+                                {% for c in colors %}
+                                <option value="{{ c.id }}" {% if c.id == order.color_id %}selected{% endif %}>
+                                    {{ c.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos de Preço e Taxa de Envio -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Preço (Custo) - €:</label>
+                            <input type="number" step="0.01" name="price" class="form-control" required value="{{ order.price }}" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Taxa de Envio (Custo) - €:</label>
+                            <input type="number" step="0.01" name="deliver_tax" class="form-control" value="{{ order.deliver_tax | default(0) }}" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Campos de Data do Pedido e Data de Entrega -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Data do Pedido:</label>
+                            <input type="date" name="order_date" class="form-control" required value="{{ order.order_date }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data de Entrega (Se Preenchida, Status vai para STOCK):</label>
+                            <input type="date" name="delivery_date" class="form-control" value="{{ order.delivery_date if order.delivery_date else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('index', user_id=order.user_id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <!-- Formulário de Exclusão (Delete) -->
+                <form id="deleteOrderForm" action="{{ url_for('delete_order') }}" method="POST">
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <input type="hidden" name="user_id" value="{{ order.user_id }}">
+                    <button type="button" 
+                            class="btn btn-danger w-100" 
+                            onclick="confirmDeletion('Encomenda')">
+                        <i class="fas fa-trash-alt me-1"></i> Deletar Encomenda
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para confirmar a exclusão (substitui alert/confirm)
+    function confirmDeletion(itemType) {
+        if (itemType === 'Encomenda') {
+            if (window.prompt("ATENÇÃO: Você está prestes a DELETAR esta Encomenda.\n\nSe houver um Post associado a este produto, ele também será APAGADO.\n\nDigite 'DELETAR' para confirmar:") === 'DELETAR') {
+                document.getElementById('deleteOrderForm').submit();
+            } else {
+                // Mensagem de erro ou cancelamento
+                console.log("Exclusão da Encomenda cancelada.");
+            }
+        }
+    }
+</script>
+
+{% endblock %}
